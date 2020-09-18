@@ -2,7 +2,7 @@
 -----------------
 The main scripts used in the SPANDAK+ semi-automated pipeline can be found in the SPANDAK+ directory.
 
-![Flow Graph](spandak+.png)
+![Flow Graph](flits.png)
 
 The SPANDAK+ is comprised of two components:
 
