@@ -1,10 +1,10 @@
 # FLITS
 -----------------
-The main scripts used in the SPANDAK+ semi-automated pipeline can be found in the SPANDAK+ directory.
+The main scripts used in the FLITS semi-automated pipeline can be found in the SPANDAK+ directory.
 
 ![Flow Graph](flits.png)
 
-The SPANDAK+ is comprised of two components:
+FLITS is comprised of two components:
 
 ## [[1] Extract2cdd_auto.py](./extract2cdd_auto.py)
 -----------------
@@ -45,6 +45,6 @@ This branch of the pipeline is geared towards analyzing intensity data using num
 
 ## Overview Paper
 
-More on the specifics of using SPANDAK+ and Intensity Analysis, as well as new results on FRB121102 (R1) and FRB180916 (R3)—for which publications are in production—can be found in the following overview paper: https://www.overleaf.com/read/knbhpqmgxnp
+More on the specifics of using FLITS and Intensity Analysis, as well as new results on FRB121102 (R1) and FRB180916 (R3)—for which publications are in production—can be found in the following overview paper: https://www.overleaf.com/read/knbhpqmgxnp
 
 The final presentation for the Breakthrough Listen BSRC 2020 Summer Internship can be found [here](./Breakthrough_Listen_Final_Presentation.pdf).
