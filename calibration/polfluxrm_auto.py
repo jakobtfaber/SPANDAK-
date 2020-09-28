@@ -13,34 +13,36 @@ import numpy as np
 import psrchive
 import pylab
 
-def fits2numpy(fitsdir):
+def fits2numpy(fitsdir, write_npys=False):
 	npydir = str(fitsdir) + '/npys'
-	if not os.path.exists(npydir):
-		os.mkdir(npydir)
-	os.chdir(npydir)
-	for fits in os.listdir(fitsdir):
-		#print(fits)
-		#npar = 'pulse_120390656' + '_secondtry.npy'
-		if fits.endswith('.fits'):
-			npar = str(fits) + '.npy'
-			with open(npar, 'wb') as npar_file:		
-				#arch = psrchive.Archive_load('/datax/scratch/jfaber/SPANDAK_extension/pipeline_playground/61.4627973333_67.0552026667_fits/pulse_120390656.fits')
-				#arch = psrchive.Archive_load(directory + '/' + fits)
-				arch = psrchive.Archive_load(fitsdir + '/' + fits)
-				#os.system('psrplot -p F -jD' + directory + '/' + fits)
-				arch.dedisperse()
-				arch.remove_baseline()
-				arch.convert_state('Stokes')
-				data = arch.get_data()
+	if write_npys:	
+		if not os.path.exists(npydir):
+			os.mkdir(npydir)
+		os.chdir(npydir)
+		for fits in os.listdir(fitsdir):
+			print('Fits files: ', fits)
+			#npar = 'pulse_120390656' + '_secondtry.npy'
+			if fits.endswith('.fits'):
+				npar = str(fits[:-5]) + '.npy'
+				with open(npar, 'wb') as npar_file:		
+					#arch = psrchive.Archive_load('/datax/scratch/jfaber/SPANDAK_extension/pipeline_playground/61.4627973333_67.0552026667_fits/pulse_120390656.fits')
+					#arch = psrchive.Archive_load(directory + '/' + fits)
+					arch = psrchive.Archive_load(fitsdir + '/' + fits)
+					#os.system('psrplot -p F -jD' + directory + '/' + fits)
+					arch.dedisperse()
+					arch.remove_baseline()
+					arch.convert_state('Stokes')
+					data = arch.get_data()
 
-				#Write Numpy Arrays to npys directory in fits directory
-				np.save(npar_file, data[:, 0, :, :].mean(0))
-				print('Numpy Array Written...')
+					#Write Numpy Arrays to npys directory in fits directory
+					np.save(npar_file, data[:, 0, :, :].mean(0))
+					print('Numpy Array Written...')
 	return npydir
 
-def id_cand(npydir):
-
+def id_cand(npydir, gen_pngs=False):
+	
 	npy_fils = [i for i in os.listdir(npydir) if i.endswith('.npy')]#[1:]
+	#print('Number of npy files: ', npy_fils)
 
 	png_directory = str(npydir) + '/pngs'
 	if not os.path.exists(png_directory):	
@@ -58,7 +60,7 @@ def id_cand(npydir):
 		ar = np.load(npydir + '/' + fil)
 
 		#Sub-band npy array
-		sub_factor = 32
+		sub_factor = 128
 		ar_sb = np.nanmean(ar.reshape(-1, sub_factor, ar.shape[1]), axis=1)
 
 		#Integrate to get absolute-valued and normalized timeseries to be able to calculate 'snr'
@@ -70,39 +72,42 @@ def id_cand(npydir):
 		#Smooth timeseries with Savitzky Golay filter
 		ts_sg = ss.savgol_filter(ar_ts, 115, 9)[100:-100]
 		ts_sg_snr = 10 * np.log10(np.max(ts_sg) / np.mean(ts_sg))
-		#print('SNR: ', ts_sg_snr)
-		#print('Pulse File: ', fil)
+		print('SNR: ', ts_sg_snr)
+		print('Pulse File: ', fil)
 
 		#Signal search for peaks, and normalized peak prominence
 		ar_pks = ss.find_peaks(ts_sg)
 		ar_pk_prom = ss.peak_prominences(ts_sg, ar_pks[0])[0]
-		norm_pk_prom = ar_pk_prom / np.max(ar_pk_prom)
-		peak_prom_snr = 10 * np.log10(np.max(norm_pk_prom) / np.min(norm_pk_prom))
-		npy_snrs.append(ts_sg_snr)
-		#print('Prominence SNR: ', peak_prom_snr)
-		
-		plt.title('Time Series | Peak Prominence SNR: ' + str(peak_prom_snr))
-		plt.plot(ts_sg)
-		#print('Peak Prominences: ', norm_pk_prom)
+		try:	
+			norm_pk_prom = ar_pk_prom / np.max(ar_pk_prom)
+			peak_prom_snr = 10*np.log10(np.max(norm_pk_prom) / np.min(norm_pk_prom))
+			peak_prom_snr_nolog = np.max(norm_pk_prom) / np.min(norm_pk_prom)
+			npy_snrs.append(ts_sg_snr)
+			print('Prominence SNR (log/nolog): ', peak_prom_snr, peak_prom_snr_nolog)
+			plt.title('Time Series | Peak Prominence SNR: ' + str(peak_prom_snr))
+                	plt.plot(ts_sg)
+		except ValueError:
+			pass
 
-
-		#Plot diagnostic dynamic spectrum
-		if ts_sg_snr > 5: 
-			ax2 = fig.add_subplot(122)
-			plt.title('Dynamic Spectrum | Candidate Likely | SNR: ' + str(ts_sg_snr))
-			plt.imshow(ar_sb, aspect = 'auto')
-			plt.gca().invert_yaxis()
-			plt.savefig(fil + '_' +  str(ts_sg_snr) + '.png')
-			#plt.show()
-		else:
-			ax2 = fig.add_subplot(122)
-			plt.title('Dynamic Spectrum | Candidate Unlikely | SNR: ' + str(ts_sg_snr))
-			plt.imshow(ar_sb, aspect = 'auto')
-			plt.gca().invert_yaxis()
-			plt.savefig(fil + '_' +  str(ts_sg_snr) + '.png')
-			#plt.savefig(fil + '.png')
-	
-	pulse_fits = pulse_files[np.where(npy_snrs == np.max(npy_snrs[1:-1]))[0][0]][:-4]
+		if gen_pngs:
+			#Plot diagnostic dynamic spectrum
+			if ts_sg_snr > 5: 
+				ax2 = fig.add_subplot(122)
+				plt.title('Dynamic Spectrum | Candidate Likely | SNR: ' + str(ts_sg_snr))
+				plt.imshow(ar_sb, aspect = 'auto')
+				plt.gca().invert_yaxis()
+				plt.savefig(fil + '_' +  str(ts_sg_snr) + '.png')
+				#plt.show()
+			else:
+				ax2 = fig.add_subplot(122)
+				plt.title('Dynamic Spectrum | Candidate Unlikely | SNR: ' + str(ts_sg_snr))
+				plt.imshow(ar_sb, aspect = 'auto')
+				plt.gca().invert_yaxis()
+				plt.savefig(fil + '_' +  str(ts_sg_snr) + '.png')
+				#plt.savefig(fil + '.png')
+	print('Pulse Fits: ', pulse_files)	
+	pulse_fits = str(pulse_files[np.where(npy_snrs == np.max(npy_snrs[1:-1]))[0][0]][:-4]) + '.fits'
+	print('File containing pulse: ', pulse_fits)
 	
 	return pulse_fits
 
@@ -137,7 +142,7 @@ def rmfit(pulse_fits, new_calibdir):
 
 	os.chdir(new_calibdir)
 
-	RM_fit_command = 'python ' + '/datax/scratch/jfaber/SPANDAK_extension/pipeline_playground/RMfit_curve.py ' + str(pulse_fits)[:-4] + '.calib'
+	RM_fit_command = 'python ' + '/datax/scratch/jfaber/FLITS/playground/rm_pa_fit/RMfit_curve.py ' + str(pulse_fits)[:-4] + '.calib'
 	os.system(RM_fit_command)
 	print('RM_fit Command', RM_fit_command)
 	return
@@ -149,9 +154,9 @@ if __name__ == '__main__':
 	fitsdir = sys.argv[1]
 	calib_file_path = sys.argv[2]
 	npydir = str(fitsdir) + '/npys'
-	npydir = fits2numpy(fitsdir)
+	npydir = fits2numpy(fitsdir, write_npys=True)
 	print('Numpy Arrays Written')
-	pulse_fits = id_cand(npydir)
+	pulse_fits = id_cand(npydir, gen_pngs=False)
 	print('Pulse Fits File Identified (Remember to Check Bookend PNGs)', pulse_fits)
 	#pulse_fits = 'pulse_120303971.fits'	
 	new_calibdir = polfluxcal(pulse_fits, calib_file_path)

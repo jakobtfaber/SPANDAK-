@@ -144,11 +144,15 @@ def _parse_spandak(csvs, sd_grade, DM_min=100, DM_max=2000, intervene=False):
 		#STAGE 4: MANUAL INTERVENTION IN CASE BURSTS ARE TOO WEAK
 
 		if intervene == True:
-			toas = [18.4463]
-			DMs = [547.3]
-			start_times = [18.2463]
-			end_times = [18.8463]
+			toas = [263.3902, 263.4046, 277.3659, 315.0407, 323.3557, 344.7733, 560.8777, 580.6574] #[18.4463, 26.4042, 224.2854]
+			DMs =  [592.2, 631.4, 636.6, 589.3, 585.3, 590.7, 581.2, 557.9] #[547.3, 646.1, 607.0]
+			start_times =  [263.1902, 263.2046, 277.1659, 314.8407, 323.1557, 344.5733, 560.6777, 580.4574] #[18.2463, 26.2042, 224.0854]
+			end_times = [263.7902,  263.8046, 277.7659, 315.4407, 323.7557, 345.1733, 561.2777, 581.0574] #[18.8463, 26.8042, 224.6854]
 
+			#toas = [18.4463]
+                        #DMs = [547.3]
+                        #start_times = [18.2463]
+                        #end_times = [18.846]
 			'''
 			toas = [18.4463, 26.4042, 224.2854, 263.3902, 263.4046, 277.3659, \
 			315.0407, 323.3557, 344.7733, 560.8777, 580.6574, 597.6409, 652.5922, \
@@ -202,6 +206,7 @@ def _parse_spandak(csvs, sd_grade, DM_min=100, DM_max=2000, intervene=False):
 		print(str(sd_grade) + ' DMs: ', DMs)
 		print(str(sd_grade) + ' Start Times: ', start_times)
 		print(str(sd_grade) + ' End Times: ', end_times)
+		print(str(sd_grade) + ' Files: ', files)
 
 		return sd_idx, files, DMs, sourcename, time_widths, toas, \
 				start_times, end_times, tau_disp, csv
@@ -410,15 +415,25 @@ def _extract_auto(rawpaths, fieldnames, sd_idx, files, filepaths, \
 			+ str(end_times[B]) + '_3.8_9/raws/'
 			extract_run_commands.append(extract_run)
 	'''
-
+	#for B in np.arange(len(start_times)):
+        #        print('Generating extraction command for B idx: ', B)                                                                              #FOR MANUAL INTERVENTION
+        #        for raw in np.arange(len(rawpaths)):
+        #                print('Generating extraction command for start time: ', start_times[B])
+	#		print('Generating extraction command for start time: ', end_times[B])
+	#		print('Fieldnames: ', fieldnames[raw][3:])
+	#		print('Rawpaths: ', rawpaths[raw])
+	#		print('Files: ', files[0])
+	#+ rawpaths[raw] + ' ' + 'blc' + str(fieldnames[raw][3:]) + files[0][85:-25] + ' '  \
 	#Construct extraction command (this has been hard coded for R3 and 121102)
 	#for B in sub_cands['all']:
-	for B in np.arange(len(start_times)):										   #FOR MANUAL INTERVENTION
+	for B in np.arange(len(start_times)):
+		#print('Generating extraction command for B idx: ', B)										   #FOR MANUAL INTERVENTION
 		for raw in np.arange(len(rawpaths)):
-			extract_run = 'python ' + '/datax/scratch/jfaber/SPANDAK_extension/extractor/extract_blocks.py ' \
-			+ rawpaths[raw] + ' ' + 'blc' + str(fieldnames[raw][3:]) + files[0][85:-25] + ' '  \
+			#print('Generating extraction command for start time: ', start_times[B])
+			extract_run = 'python ' + '/datax/scratch/jfaber/FLITS/extractor/extract_blocks.py ' \
+			+ rawpaths[raw] + ' ' + 'blc' + str(fieldnames[raw][3:]) + '_guppi_57991_49905_DIAG_FRB121102_0011 ' \
 			+ str(start_times[B]) + ' ' + str(end_times[B]) \
-			+ ' /datax/scratch/jfaber/SPANDAK_extension/pipeline_playground/FRB121102/bursts/'  \
+			+ ' /datax/scratch/jfaber/FLITS/playground/FRB121102/bursts/'  \
 			+  str(start_times[B]) + '_' + str(end_times[B]) + '_3.8_9/raws/'
 			extract_run_commands.append(extract_run)
 			#Substitute in when necessary
@@ -464,15 +479,20 @@ def _extract_auto(rawpaths, fieldnames, sd_idx, files, filepaths, \
 	#Form directories for storing raw voltages
 	if mkdir == True:
 		#Construct time directories
-		time_dir = '/datax/scratch/jfaber/SPANDAK_extension/pipeline_playground/FRB121102/bursts/' \
-					+ str(start_times[B]) + '_' + str(end_times[B]) + '_3.8_9'
+		#time_dir = '/datax/scratch/jfaber/FLITS/playground/FRB121102/bursts/' \
+		#			+ str(start_times[B]) + '_' + str(end_times[B]) + '_3.8_9'
 
 		#Construct raw voltage directories
-		raws_dir = '/datax/scratch/jfaber/SPANDAK_extension/pipeline_playground/FRB121102/bursts/' \
-					+ str(start_times[B]) + '_' + str(end_times[B]) + '_3.8_9/raws'
+		#raws_dir = '/datax/scratch/jfaber/FLITS/playground/FRB121102/bursts/' \
+		#			+ str(start_times[B]) + '_' + str(end_times[B]) + '_3.8_9/raws'
 
 		#for B in sub_cands['all']:
 		for B in np.arange(len(start_times)): #FOR MANUAL INTERVENTION
+		#Construct time directories
+                	time_dir = '/datax/scratch/jfaber/FLITS/playground/FRB121102/bursts/' \
+                                        + str(start_times[B]) + '_' + str(end_times[B]) + '_3.8_9'
+			raws_dir = '/datax/scratch/jfaber/FLITS/playground/FRB121102/bursts/' \
+                                        + str(start_times[B]) + '_' + str(end_times[B]) + '_3.8_9/raws'
 			if not os.path.exists(time_dir):
 				os.mkdir(time_dir)
 			if not os.path.exists(raws_dir):
@@ -488,7 +508,7 @@ def _extract_auto(rawpaths, fieldnames, sd_idx, files, filepaths, \
 
 
 def _splice_auto(sub_cands, files, start_times, end_times, \
-	ex_raws_path='/datax/scratch/jfaber/SPANDAK_extension/pipeline_playground/FRB121102/bursts/', splice=False):
+	ex_raws_path='/datax/scratch/jfaber/FLITS/playground/FRB121102/bursts/', splice=False):
 
 	'''Splices extracted raw voltages'''
 
@@ -497,7 +517,7 @@ def _splice_auto(sub_cands, files, start_times, end_times, \
 
 	#for B in sub_cands['combined']:
 	for B in np.arange(len(start_times)):	#FOR MANUAL INTERVENTION	
-		splicer_run = 'python ' + '/datax/scratch/jfaber/SPANDAK_extension/extractor/splicer_raw.py ' \
+		splicer_run = 'python ' + '/datax/scratch/jfaber/FLITS/extractor/splicer_raw.py ' \
 		+  str(ex_raws_path) + str(start_times[B]) + '_' + str(end_times[B]) \
 		+ '_3.8_9/raws ' + '2 ' + 'spliced_' +  str(start_times[B]) + '_' + str(end_times[B]) + '.raw'
 		splicer_run_commands.append(splicer_run)
@@ -510,7 +530,7 @@ def _splice_auto(sub_cands, files, start_times, end_times, \
 
 	return splicer_run_commands
 
-def _gen_par(sourcename, sd_idx, DMs, write_par=False):
+def _gen_par(sourcename, toas, DMs, write_par=False):
 
 	'''Writes par files'''
 
@@ -523,8 +543,9 @@ def _gen_par(sourcename, sd_idx, DMs, write_par=False):
 	#F0 = 12
 
 	par_file = []
+	par_fil_paths = []
 	#for B in np.arange(len(sd_idx)):
-	for B in np.arange(len(start_times)):  #FOR MANUAL INTERVENTION
+	for B in np.arange(len(toas)):  #FOR MANUAL INTERVENTION
 		par_txt = 'PSR  ' + str(121102) + '\n' \
 		+ 'RAJ  ' + '05:31:58.70' '\n' + 'DECJ  ' + '+33:08:52.5' + '\n' \
 		+ 'C The following is (1+v/c)*f_topo where f_topo is 1/(2048*dt)' + '\n' \
@@ -532,19 +553,20 @@ def _gen_par(sourcename, sd_idx, DMs, write_par=False):
 		+ '57962.373622685185186' + '\n' + 'CLOCK  ' + 'UNCORR'
 		par_file.append(par_txt)
 		
-	par_fil_paths = []
+	#par_fil_paths = []
 	#for B in np.arange(len(sd_idx)):
-	for B in np.arange(len(start_times)): #FOR MANUAL INTERVENTION
-		par_fil = '/datax/scratch/jfaber/SPANDAK_extension/pipeline_playground/FRB121102/pars/' \
+	#for B in np.arange(len(toas)): #FOR MANUAL INTERVENTION
+		par_fil = '/datax/scratch/jfaber/FLITS/playground/FRB121102/pars/' \
 				+ 'FRB_' + str(toas[B]).split('.')[0] + '.par'
 		#par_fil = '/Users/jakobfaber/Documents/spandak_extended/SPANDAK_extension/pipeline_playground/parfiles/' \
 				#+ 'FRB_' + str(source_int[B]) + '_' + str(sd_idx[B]) + '.par'
 		par_fil_paths.append(par_fil)
 	
 	#Write par files
-	if write_par == True:
-		for B in np.arange(len(sd_idx)):
-		#for B in np.arange(len(start_times)):	
+		if write_par == True:
+			#for B in np.arange(len(sd_idx)):
+			#for B in np.arange(len(toas)):
+			print('Writing par for ' + str(toas[B]))	
 			par = open(par_fil, "w")
 			par.write(par_file[B])
 			par.close()
@@ -571,7 +593,7 @@ def _cdd_auto(sub_cands, files, par_fil_paths, start_times, end_times, cdd=False
 		cdd_run = 'dspsr ' + '-U ' + str(samples) + ' -F ' + str(chan) + ':D ' \
 		+ ' -K ' + ' -d ' + str(polar) + ' -b  ' + str(phasebin) + ' -E ' \
 		+ par_fil_paths[B] + ' -s -a psrfits -e fits ' \
-		+ '/datax/scratch/jfaber/SPANDAK_extension/pipeline_playground/FRB121102/bursts/' \
+		+ '/datax/scratch/jfaber/FLITS/playground/FRB121102/bursts/' \
 		+ str(start_times[B]) + '_' + str(end_times[B]) + '_3.8_9/raws/' + 'spliced_' \
 		+ str(start_times[B]) + '_' + str(end_times[B]) + '.raw'
 		cdd_run_commands.append(cdd_run)
@@ -582,8 +604,8 @@ def _cdd_auto(sub_cands, files, par_fil_paths, start_times, end_times, cdd=False
 		for cdd in cdd_run_commands:
 			
 			#Make directies for raw voltages (if necessary -- probably won't need it), but also for fits file storage
-			time_dir = '/datax/scratch/jfaber/SPANDAK_extension/pipeline_playground/FRB121102/bursts/' + str(cdd.split('/')[16])
-			fits_dir = '/datax/scratch/jfaber/SPANDAK_extension/pipeline_playground/FRB121102/bursts/' + str(cdd.split('/')[16]) + '/fits'
+			time_dir = '/datax/scratch/jfaber/FLITS/playground/FRB121102/bursts/' + str(cdd.split('/')[16])
+			fits_dir = '/datax/scratch/jfaber/FLITS/playground/FRB121102/bursts/' + str(cdd.split('/')[16]) + '/fits'
 			#print('Time', time_dir)
 			#print('Fits', fits_dir)
 
@@ -620,7 +642,7 @@ if __name__ == "__main__":
 	#Splice Raw Voltages
 	splicer_run_commands = _splice_auto(sub_cands, files, start_times, end_times, splice=True)
 	#Generate Par Files
-	source_int, par_file,par_fil_paths = _gen_par(sourcename, sd_idx, DMs, write_par=True)
+	source_int, par_file,par_fil_paths = _gen_par(sourcename, toas, DMs, write_par=True)
 	#Coherently Dedisperse Spliced Raw Voltages
 	cdd_run_commands = _cdd_auto(sub_cands, files, par_fil_paths, start_times, end_times, cdd=True)
 
