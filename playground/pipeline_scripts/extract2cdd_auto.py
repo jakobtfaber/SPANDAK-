@@ -589,7 +589,6 @@ if __name__ == "__main__":
 	#Extract Raw Voltages
 	extract_run_commands, sub_cands, plot_bands = _extract_auto(rawpaths, \
 		fieldnames, sd_idx, files, filepaths, start_times, end_times, csv)
-	print(extract_run_commands)
 	#Splice Raw Voltages
 	splicer_run_commands = _splice_auto(sub_cands, files, start_times, end_times)
 	#Generate Par Files

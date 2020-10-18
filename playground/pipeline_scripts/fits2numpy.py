@@ -6,7 +6,8 @@ import pylab
 import sys
 import os
 
-directory = sys.argv[1]
+#Directory containing fits files
+directory = argsv[1]
 
 def fits2numpy():
 	for fits in os.listdir(directory):
