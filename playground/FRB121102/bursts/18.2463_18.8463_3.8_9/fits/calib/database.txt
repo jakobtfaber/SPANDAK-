@@ -1,7 +1,6 @@
-Pulsar::Database::path /datax/scratch/jfaber/SPANDAK_extension/pipeline_playground/FRB121102/bursts/18.2463_18.8463_3.8_9/fits/calib
-Pulsar::Database # of entries = 5
+Pulsar::Database::path /datax/scratch/jfaber/FLITS/playground/FRB121102/bursts/18.2463_18.8463_3.8_9/fits/calib
+Pulsar::Database # of entries = 4
 spliced_FluxcalOff_3C161.fits FluxCal-Off 06:27:10.944 -04:53:19.68 57991.566346759258541 -3562.500000 6407.714800 9728 GUPPI Rcvr4_6
 spliced_FluxcalOn_3C161.fits FluxCal-On 06:27:10.128 -05:53:05.28 57991.565444576714036 -3562.500000 6407.714800 9728 GUPPI Rcvr4_6
 spliced_PolnCal_FRB121102.fits PolnCal 05:31:58.632 +33:08:52.44 57991.577142791005284 -3562.500000 6407.714800 9728 GUPPI Rcvr4_6
-pulse_120304002.fits Pulsar 05:31:58.704 +33:08:52.44 57991.577613532848979 -3562.500000 6407.714844 9728 GUPPI Rcvr4_6
 spliced_FluxcalOn_3C161.fluxcal flux 06:27:10.128 -05:53:05.28 57991.565405698915554 -3562.500000 6407.714800 9728 GUPPI Rcvr4_6

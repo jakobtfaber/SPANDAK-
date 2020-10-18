@@ -33,7 +33,7 @@ def id_cand(f2ndir=f2ndir):
         #plt.plot(ar_ts)
 
         #Smooth timeseries with Savitzky Golay filter
-        ts_sg = ss.savgol_filter(ar_ts, 115, 9)[100:1900]
+        ts_sg = ss.savgol_filter(ar_ts, 115, 9)[100:-100]
         ts_sg_snr = 10 * np.log10(np.max(ts_sg) / np.min(ts_sg))
         print('SNR: ', ts_sg_snr)
 	print('Pulse File: ', fil)

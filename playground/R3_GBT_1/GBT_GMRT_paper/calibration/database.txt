@@ -1,3 +1,0 @@
-Pulsar::Database::path /datax/scratch/jfaber/FLITS/playground/R3_GBT_1/GBT_GMRT_paper/calibration
-Pulsar::Database # of entries = 1
-spliced_PolCalOnOff.fits PolnCal 01:58:02.136 +65:42:44.28 58932.282582208995499 -375.000000 801.464844 1024 GUPPI Rcvr_800

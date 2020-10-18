@@ -1,0 +1,33 @@
+#Archive Files
+*.fits
+*.norm
+*.ar
+*.tsch
+*.fsch
+*.tschfsch
+*.zm
+*.zmtsch
+*.zm2tsch
+*.zmtschfsch
+*.zm2tschfsch
+*.zm3tsch
+*.par
+
+#Calibration
+*.fluxcal
+*.DD
+*.DM
+*.RM
+*.txt
+*.std
+*.calib
+*.4p
+*.paprof
+*.zoom
+*.m
+*.cfg
+*.bkp
+
+#Raw extraction
+*.raw
+

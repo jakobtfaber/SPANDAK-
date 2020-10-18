@@ -144,10 +144,12 @@ def _parse_spandak(csvs, sd_grade, DM_min=100, DM_max=2000, intervene=False):
 		#STAGE 4: MANUAL INTERVENTION IN CASE BURSTS ARE TOO WEAK
 
 		if intervene == True:
-			toas = [2170.2814, 2485.9404, 3311.8506, 3520.9209, 8933.081, 9462.0387, 9462.0414, 12932.3224, 14232.5532, 15620.6784, 15758.9369, 16074.1381]
-			DMs = [646.8, 569.0, 593.5, 581.3, 581.4, 582.1, 576.2, 609.0, 622.9, 595.5, 579.2, 556.8]
-			start_times = [2170.0814, 2485.7404, 3311.6506, 3520.7209, 8932.881, 9461.8386, 9461.8414, 12932.122, 14232.35, 15620.478, 15758.736, 16073.938]
-			end_times = [2170.6814, 2486.3404, 3312.2506, 3521.3209, 8933.481, 9462.4386, 9462.4414, 12932.7223, 14232.9532, 15621.0784, 15759.3369, 16074.5381]
+			toas = [558.9223, 840.9885, 842.0905, 1280.6826, 1399.9147]
+			#toas = [2170.2814, 2485.9404, 3311.8506, 3520.9209]#, 8933.081, 9462.0387, 9462.0414, 12932.3224, 14232.5532, 15620.6784, 15758.9369, 16074.1381]
+			DMs = [527.0, 607.8, 564.6, 570.0, 653.7]
+			#DMs = [646.8, 569.0, 593.5, 581.3]#, 581.4, 582.1, 576.2, 609.0, 622.9, 595.5, 579.2, 556.8]
+			start_times = [558.7222, 840.7885, 841.8905, 1280.4826, 1399.7147] #[2170.0814, 2485.7404, 3311.6506, 3520.7209]#, 8932.881, 9461.8386, 9461.8414, 12932.122, 14232.35, 15620.478, 15758.736, 16073.938]
+			end_times = [559.3222, 841.3885, 842.4905, 1281.0826, 1400.3147] #[2170.6814, 2486.3404, 3312.2506, 3521.3209]#, 8933.481, 9462.4386, 9462.4414, 12932.7223, 14232.9532, 15621.0784, 15759.3369, 16074.5381]
 			#toas = [18.4463]
                         #DMs = [547.3]
                         #start_times = [18.2463]
@@ -402,8 +404,8 @@ def _extract_auto(rawpaths, fieldnames, sd_idx, files, filepaths, \
 		for raw in np.arange(len(rawpaths)):
 			#print('Generating extraction command for start time: ', start_times[B])
 			extract_run = 'python ' + '/datax/scratch/jfaber/FLITS/extractor/extract_blocks.py ' \
-			+ rawpaths[raw] + ' ' + 'blc' + str(fieldnames[raw][3:]) + '_guppi_57991_51723_DIAG_FRB121102_0012 ' \
-			+ str(start_times[B] - 1800) + ' ' + str(end_times[B] - 1800) \
+			+ rawpaths[raw] + ' ' + 'blc' + str(fieldnames[raw][3:]) + '_guppi_57991_49905_DIAG_FRB121102_0011 ' \
+			+ str(start_times[B]) + ' ' + str(end_times[B]) \
 			+ ' /datax/scratch/jfaber/FLITS/playground/FRB121102/bursts/'  \
 			+  str(start_times[B]) + '_' + str(end_times[B]) + '_3.8_9/raws/'
 			extract_run_commands.append(extract_run)

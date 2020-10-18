@@ -8,19 +8,21 @@ from photutils.isophote import EllipseGeometry
 from photutils import EllipticalAperture
 from photutils.isophote import Ellipse
 from photutils.isophote import build_ellipse_model
+import sys
+import os
 plt.rcParams.update({'font.size': 20})
 plt.rc('font', family='serif')
 
-def burst_drift(npy, fslice = ':', tslice = ':'):
+def burst_drift(npy, sma=30, eps=0.4, pa=0.1):
 	
 	#Load npy array
 	burst = np.load(npy)
 
 	#Subband in Frequency
 	subfac = 16
-	rb_sub = np.nanmean(R3H.reshape(-1, subfac, R3H.shape[1]), axis=1)
+	rb_sub = np.nanmean(burst.reshape(-1, subfac, burst.shape[1]), axis=1)
 
-	rb_sub_zm = rb_sub[fslice,tslice]
+	rb_sub_zm = rb_sub
 
 	ynorm = (rb_sub_zm.sum(0)/np.max(rb_sub_zm.sum(0)))
 	x = np.linspace(0, len(ynorm)-1, len(ynorm))
@@ -35,7 +37,7 @@ def burst_drift(npy, fslice = ':', tslice = ':'):
 
 	#Provide the initial Ellipse to be fitted
 	#Calculate Ellipse Geometry
-	geometry = EllipseGeometry(x0 = acf.shape[1]/2, y0 = acf.shape[0]/2, sma = 20, eps = 0.4, pa = 60 * np.pi/180.)
+	geometry = EllipseGeometry(x0 = acf.shape[1]/2, y0 = acf.shape[0]/2, sma = sma, eps = eps, pa = pa)
 	#Show Initial Guess Ellipsee
 	aper = EllipticalAperture((geometry.x0, geometry.y0), geometry.sma, geometry.sma*(1-geometry.eps),geometry.pa)
 
@@ -99,12 +101,15 @@ def burst_drift(npy, fslice = ':', tslice = ':'):
 	plt.xlabel('Time (ms)')
 	plt.xticks(np.arange(0, sav.shape[1], 48), [0,2,4,6,8,10])
 	#ax3.set_title('Residual')
-	fig.savefig('Drift Rate R3H')
+	fig.savefig('burst_drift_fit')
 	return
 
 if __name__ == '__main__':
 
 	npy = sys.argv[1]
+	#sma = sys.argv[2]
+	#eps = sys.argv[3]
+	#pa = sys.argv[4]
 	burst_drift(npy)
 
 

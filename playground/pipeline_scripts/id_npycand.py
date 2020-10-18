@@ -10,11 +10,12 @@ import os
 
 #Path to fits directory
 #f2ndir = '/Users/jakobfaber/Documents/spandak_extended/SPANDAK_extension/pipeline_playground/fits2npy_test_files'
-f2ndir = '/datax/scratch/jfaber/SPANDAK_extension/pipeline_playground/R3/0002/16.384175488_20.223649024_3.8_9/npys'#FRB121102_npy/1703.15379733_1708.74620267_npy'
+#f2ndir = '/datax/scratch/jfaber/SPANDAK_extension/pipeline_playground/R3/0002/16.384175488_20.223649024_3.8_9/npys'#FRB121102_npy/1703.15379733_1708.74620267_npy'
+f2ndir = sys.argv[1]
 
 def id_cand(f2ndir=f2ndir):
     
-    npy_fils = [i for i in os.listdir(f2ndir) if i.endswith('fits.npy')]#[1:]
+    npy_fils = [i for i in os.listdir(f2ndir) if i.endswith('.npy')]#[1:]
 
     for fil in npy_fils:    
 
@@ -22,8 +23,9 @@ def id_cand(f2ndir=f2ndir):
         ar = np.load(f2ndir + '/' + fil)
 
         #Sub-band npy array
-        sub_factor = 32
+        sub_factor = 128
         ar_sb = np.nanmean(ar.reshape(-1, sub_factor, ar.shape[1]), axis=1)
+	#ar_sg =  ss.savgol_filter(ar_sb, 151, 9)	
 
         #Integrate to get absolute-valued and normalized timeseries and calculate 'snr'
         ar_ts = np.abs(ar_sb.sum(0) / np.max(ar_sb.sum(0)))
@@ -32,7 +34,7 @@ def id_cand(f2ndir=f2ndir):
         #plt.plot(ar_ts)
 
         #Smooth timeseries with Savitzky Golay filter
-        ts_sg = ss.savgol_filter(ar_ts, 115, 9)[100:1900]
+        ts_sg = ss.savgol_filter(ar_ts, 151, 9)[100:1900]
         ts_sg_snr = 10 * np.log10(np.max(ts_sg) / np.min(ts_sg))
         print('SNR: ', ts_sg_snr)
 	print('Pulse File: ', fil)
