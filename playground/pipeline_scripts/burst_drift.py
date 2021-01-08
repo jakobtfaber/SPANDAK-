@@ -222,7 +222,7 @@ def fit_ellipse(burst_npy, acf, geometry, aper, sigma_t, sigma_f, plot=True):
 if __name__ == "__main__":
 
 	burst_npy = sys.argv[1]
-	savts_2d_c, savsp_2d_c, tres, subfres = identify_pulse(burst_npy, bandwidth=400, centfreq=800, tres=0.04069, plot=True)
+	savts_2d_c, savsp_2d_c, tres, subfres = identify_pulse(burst_npy, bandwidth=400, centfreq=800, tres=0.02035, plot=True)
 	acf2d, geometry, aper, sigmat, sigmaf = prep_2dacf(savts_2d_c, savsp_2d_c, tres, subfres)
 	drift_rate = fit_ellipse(burst_npy, acf2d, geometry, aper, sigmat, sigmaf, plot=True)
 

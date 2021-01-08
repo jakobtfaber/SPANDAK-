@@ -89,7 +89,7 @@ def plotfig(filename,freql,freqh,snr,low,high,RM,polplot,ext,dm,PAfile,minlabx,m
 	    fpsr.set_rotation_measure(RM)
 	    fpsr.defaraday() 
    
-    fpsr.fscrunch_to_nchan(64)
+    fpsr.fscrunch_to_nchan(128)
     #fpsr.tscrunch(128)
     #fpsr.tscrunch_to_nsub(128)
     name = fpsr.get_source()

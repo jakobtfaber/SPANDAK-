@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import matplotlib
+matplotlib.use('Agg')
 from argparse import ArgumentParser
 import os,sys,math
 import timeit
