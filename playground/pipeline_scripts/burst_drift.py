@@ -9,10 +9,13 @@ from photutils import EllipticalAperture
 from photutils.isophote import Ellipse
 from photutils.isophote import build_ellipse_model
 import sys
+import multiprocessing
+import time
+
 plt.rcParams.update({'font.size': 10})
 plt.rc('font', family='serif')
 
-def identify_pulse(burst_npy, bandwidth, centfreq, tres=0.08192, plot=True):
+def _identify_pulse(burst_npy, bandwidth=400., centfreq=800., tres=0.08192, plot=True):
 
 	#Load numpy array
 	npy = np.load(str(burst_npy))
@@ -22,13 +25,13 @@ def identify_pulse(burst_npy, bandwidth, centfreq, tres=0.08192, plot=True):
 	sub = np.nanmean(npy.reshape(-1, subfac, npy.shape[1]), axis=1)
 
 	#Smooth Data w Savitzky Golay filter (t - time) (s - spectrum)
-	twinlen = sub.shape[1] // 4
+	twinlen = sub.shape[1] // 8
 	if twinlen % 2 == 0:
 		twinlen = twinlen + 1
-	swinlen = sub.shape[0] // 2
+	swinlen = sub.shape[0] // 8
 	if swinlen % 2 == 0:
 		swinlen = swinlen + 1
-	polyo = 6
+	polyo = 7
 	savts_2d = ss.savgol_filter(sub, twinlen, polyo, axis=1)
 	savsp_2d = ss.savgol_filter(sub, swinlen, polyo, axis=0)
 	print('DYN Time Window Length', twinlen)
@@ -60,9 +63,9 @@ def identify_pulse(burst_npy, bandwidth, centfreq, tres=0.08192, plot=True):
 	sav_c = sub[:, lcut:rcut]
 
 	#Apply proper units to axes
-	nchan = npy.shape[1]
-	bw = 400 #MHz
-	cfreq = 800 #MHz
+	nchan = npy.shape[0]
+	bw = float(bandwidth) #MHz
+	cfreq = float(centfreq) #MHz
 	fres = bw / nchan
 	print('Frequency Resolution', str(fres) + ' MHz')
 	subchan = nchan / subfac
@@ -70,15 +73,19 @@ def identify_pulse(burst_npy, bandwidth, centfreq, tres=0.08192, plot=True):
 	print('Sub Frequency Resolution', str(subfres) + ' MHz')
 
 	#Frequency
-	flabellocs = np.arange(0, sav_c.shape[0], step=sav_c.shape[0]//((2*bw/100)))
-	flabel_noend = np.arange(cfreq - bw/2, cfreq+ bw/2, step=bw//((2*bw/100)))
-	flabels = np.flip(np.append(flabel_noend, [cfreq+ bw/2]))
-
+	flabel_noend = np.arange(cfreq - bw/2, cfreq+ bw/2, step=round(bw/(2*bw/100)))
+	flabels = np.flip(np.append(flabel_noend, [cfreq + bw/2]))
+	flabellocs = np.arange(0, sav_c.shape[0], step=sav_c.shape[0]/(len(flabels)-1))#step=sav_c.shape[0]//((2*bw/100)))
+	print('FLabel locs: ', flabellocs)
+	print('Flables: ', flabels)
+	
 	#Time
 	tbin = sav_c.shape[1]
-	tlabellocs = np.arange(0, sav_c.shape[1], step=sav_c.shape[1]//(8+1))
-	tlabels_noend = np.arange(0, sav_c.shape[1]*tres, step=(sav_c.shape[1]*tres)//8)
-	tlabels = np.append(tlabels_noend, [int(sav_c.shape[1]*tres)])
+	tlabellocs = np.arange(0, sav_c.shape[1], step=round(sav_c.shape[1]/8))
+	tlabels_noend = np.arange(0, sav_c.shape[1]*tres, step=round(sav_c.shape[1]*tres/8))
+	tlabels = np.append(tlabels_noend, [round(sav_c.shape[1]*tres)])
+	print('TLabel locs: ', tlabellocs)
+	print('Tlables: ', tlabels)
 
 	#Plot
 	if plot == True:
@@ -92,6 +99,7 @@ def identify_pulse(burst_npy, bandwidth, centfreq, tres=0.08192, plot=True):
 		fig.add_subplot(122)
 		plt.plot(xts[lcut:rcut], savts[lcut:rcut])
 		plt.plot(xts[lcut:rcut], fitted_modelts(xts)[lcut:rcut])
+		plt.show()
 		fig.savefig(str(burst_npy) + '_dyn_ts.png')
 
 	#Crop Smoothed Dyn Spec on Both Axes
@@ -100,7 +108,7 @@ def identify_pulse(burst_npy, bandwidth, centfreq, tres=0.08192, plot=True):
 
 	return savts_2d_c, savsp_2d_c, tres, subfres
 
-def prep_2dacf(time_smooth, freq_smooth, time_res, subband_freq_res):
+def _prep_2dacf(time_smooth, freq_smooth, time_res, subband_freq_res, diagnostic=True):
 
 	#Calculate 2d acf
 	acf2d = ss.correlate(savts_2d_c, savsp_2d_c)
@@ -147,8 +155,18 @@ def prep_2dacf(time_smooth, freq_smooth, time_res, subband_freq_res):
 	fitted_modelsp = fittersp(modelsp, xsp, savsp)
 
 	#Get Ellipse Ratio
-	sigmat = fitted_modelt.stddev.value * 0.75
-	sigmaf = fitted_modelsp.stddev.value * 0.75
+	sigmat = fitted_modelt.stddev.value
+	sigmaf = fitted_modelsp.stddev.value
+	#Up to sig 3 -- MAKE EDIT TO ADJUST ITERATIVELY IN FIT FUNCTION
+	sigt1 = sigmat
+	sigf1 = sigmaf
+	sigt2 = sigmat * 2
+	sigf2 = sigmaf * 2
+	sigt3 = sigmat * 3
+	sigf3 = sigmaf * 3
+
+	sigmat = sigmat * 0.3
+	sigmaf = sigmaf * 0.3
 
 	#Sigmas form a rectangle, get slope of the rectangle diagonal to estimate semi major axis PA
 	hyp = np.sqrt(sigmat**2 + sigmaf**2)
@@ -176,11 +194,19 @@ def prep_2dacf(time_smooth, freq_smooth, time_res, subband_freq_res):
 	aper = EllipticalAperture((geometry.x0, geometry.y0), \
 			geometry.sma, geometry.sma*(1-geometry.eps),geometry.pa)
 
+	if diagnostic == True:
+		fig = plt.figure()
+		plt.imshow(acf2d, aspect = 'auto')
+		aper.plot(color='white')
+		plt.title('Diagnostic - Pre-fit Estimate')
+		plt.show()
+		fig.savefig('Diagnostic_' + str(burst_npy) + '.png')
+
 	print('Now for the fit...')
 	
-	return acf2d, geometry, aper, sigmat, sigmaf
+	return acf2d, geometry, aper, sigmat, sigmaf, sigf3
 
-def fit_ellipse(burst_npy, acf, geometry, aper, sigma_t, sigma_f, plot=True):
+def _fit_ellipse(burst_npy, acf, geometry, aper, sigma_t, sigma_f, plot=True):
 
 	#Fit Ellipse to 2D ACF
 	try:
@@ -190,14 +216,15 @@ def fit_ellipse(burst_npy, acf, geometry, aper, sigma_t, sigma_f, plot=True):
 		residual = acf - model_image
 		
 		if plot == True:
-			smas = np.linspace(0, int(sigma_f), 3)
+			fig = plt.figure()
+			smas = np.linspace(0, int(sigf3), 8)
 			for sma in smas:
 				iso = isolist.get_closest(sma)
 				x, y, = iso.sampled_coordinates()
-				fig = plt.figure()
 				plt.imshow(acf, aspect = 'auto')
 				plt.plot(x, y, color='white')
-				fig.savefig(str(burst_npy) + '_ellipse_fit.png')
+			plt.show()
+			fig.savefig(str(burst_npy) + '_ellipse_fit.png')	
 	except OverflowError:
 	    print('Note: Overflow Error')
 	    pass
@@ -222,9 +249,22 @@ def fit_ellipse(burst_npy, acf, geometry, aper, sigma_t, sigma_f, plot=True):
 if __name__ == "__main__":
 
 	burst_npy = sys.argv[1]
-	savts_2d_c, savsp_2d_c, tres, subfres = identify_pulse(burst_npy, bandwidth=400, centfreq=800, tres=0.04069, plot=True)
-	acf2d, geometry, aper, sigmat, sigmaf = prep_2dacf(savts_2d_c, savsp_2d_c, tres, subfres)
-	drift_rate = fit_ellipse(burst_npy, acf2d, geometry, aper, sigmat, sigmaf, plot=True)
+	cfreq = sys.argv[2]
+	bandwidth = sys.argv[3]
+	savts_2d_c, savsp_2d_c, tres, subfres = _identify_pulse(burst_npy, bandwidth=bandwidth, centfreq=cfreq, tres=0.08192, plot=True)
+	acf2d, geometry, aper, sigmat, sigmaf, sigf3 = _prep_2dacf(savts_2d_c, savsp_2d_c, tres, subfres, diagnostic=True)
+	print('Sigma Freq: ', sigmaf)
+	drift_rate = _fit_ellipse(burst_npy, acf2d, geometry, aper, sigmat, sigf3, plot=True)
 
-
+	dr_process = multiprocessing.Process(target=_fit_ellipse, name="Drift Fit", args=(60,))
+	dr_process.start()
+	# Wait a maximum of 60 seconds for foo
+	# Usage: join([timeout in seconds])
+	dr_process.join(60)
+	# If thread is active
+	if dr_process.is_alive():
+		print("Drift Fit Took Too Long...")
+		# Terminate foo
+		dr_process.terminate()
+		dr_process.join()
 
