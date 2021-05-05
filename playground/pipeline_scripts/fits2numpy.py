@@ -17,8 +17,8 @@ def fits2numpy():
                         with open(npar, 'wb') as npar_file:
                                 arch = psrchive.Archive_load(directory + '/' + fits)
                                 arch.pscrunch()
-				arch.set_dispersion_measure(float(DM))
-				arch.dedisperse()
+                                arch.set_dispersion_measure(float(DM))
+                                arch.dedisperse()
                                 arch.remove_baseline()
                                 #arch.convert_state('Stokes')
                                 data = arch.get_data()
