@@ -8,17 +8,23 @@ import os
 
 #Directory containing fits files
 directory = sys.argv[1]
-DM = sys.argv[2]
+end = sys.argv[2]
+DM = sys.argv[3]
+burstname = sys.argv[4]
+
 
 def fits2numpy():
         for fits in os.listdir(directory):
-		if fits.endswith('.ar') or fits.endswith('.norm') or fits.endswith('.fits'):
-                        npar = str(fits.split('.')[0]) + '.npy'
-                        with open(npar, 'wb') as npar_file:
+		if fits.endswith(str(end)): #or fits.endswith('.tsch256') or fits.endswith('.fits'):
+                        #npar = str(fits.split('.')[0]) + '.dm' + str(DM) + '.npy'
+                        npar = str(burstname) + '.dm' + str(DM) + '.npy'
+			with open(npar, 'wb') as npar_file:
                                 arch = psrchive.Archive_load(directory + '/' + fits)
                                 arch.pscrunch()
-                                arch.set_dispersion_measure(float(DM))
-                                arch.dedisperse()
+				arch.bscrunch_to_nbin(64)
+				arch.fscrunch_to_nchan(608)
+				arch.set_dispersion_measure(float(DM))
+				arch.dedisperse()
                                 arch.remove_baseline()
                                 #arch.convert_state('Stokes')
                                 data = arch.get_data()

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#/usr/bin/env python
 import matplotlib
 matplotlib.use("pdf")
 from argparse import ArgumentParser
@@ -33,7 +33,7 @@ if __name__ == "__main__":
 	RM = []
 	LvsI = []
 	
-	for i in range(80000,120000,50):
+	for i in range(93000,96000,10):
 		file1 = psr.Archive_load(filename)	
 		#print file1.get_rotation_measure()
 		file1.set_rotation_measure(i)
