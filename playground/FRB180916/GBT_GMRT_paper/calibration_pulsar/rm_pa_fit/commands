@@ -1,0 +1,10 @@
+#psredit -c "dm=565" -m *.RM
+#pam -D -m *.RM
+pam -S -e calib.4p pulse_120303980.calib
+pam --DD -e calib.4p.DD pulse_120303980.calib
+psredit -c "dm=565" -e DM pulse_120303980.calib.4p.DD
+pam -D -m pulse_120303980.calib.4p.DM
+pam -R 93559 -e RM pulse_120303980.calib.4p.DM
+paz -F "8200 7500" -F "5300 4400" -e RM.zoom pulse_120303980.calib.4p.RM
+pdv -FT -Z -t pulse_120303980.calib.4p.RM.zoom > pulse_120303980.calib.RM.zoom.paprof
+python PlotFigure2.py -f pulse_120303980.calib.4p --pol -R 93559 --fl 5300 --fh 7500 --ext 10 --PAF pulse_120303980.calib.RM.zoom.paprof

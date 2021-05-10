@@ -31,3 +31,11 @@
 #Raw extraction
 *.raw
 
+#Images
+*.png
+*.pdf
+*.npy
+*.npz
+
+#Too large files
+*.json

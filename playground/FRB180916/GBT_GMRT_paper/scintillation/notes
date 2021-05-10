@@ -1,0 +1,3 @@
+Date: 4.19.21
+These numpy arrays were added here to see if, when the fits2numpy.py script was run, the the numpy files had tappered-off freq. channels or not.
+This directory is for scintillation studies.
